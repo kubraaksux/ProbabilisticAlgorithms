@@ -18,4 +18,4 @@ Customize the parameters in the script's if __name__ == "__main__": block accord
 
 Run the script.
 
-Check the output files for simulation results.
+Check the output files and console for simulation results.
