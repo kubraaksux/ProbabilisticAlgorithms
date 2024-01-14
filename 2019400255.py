@@ -1,7 +1,7 @@
 import numpy as np
 import math
 import time
-
+import sys
 
 class ChessboardGame():
 
@@ -75,7 +75,7 @@ class ChessboardGame():
 
     def runChessboardGame(self):
         
-        while(self.current_move <= self.minVisit):
+        while(self.current_move < self.minVisit):
             available_moves = self.findAvailableSquares()
             if(len(available_moves)==0):
                 #we are stuck, dead end
@@ -87,24 +87,26 @@ class ChessboardGame():
         return True,self.current_move #visited the minimum number of squares
 
     def runKRandomChessboardGame(self, k):
+
         if(k!=0):
             while(k>0):
                 available_moves = self.findAvailableSquares()
                 if(len(available_moves)==0):
                     #we are stuck, dead end// actually it is not possible
                     k = 0
-                    break
+                    return False
                 else:
                     next_move = np.random.randint(0,len(available_moves))
                     self.move(available_moves[next_move][0],available_moves[next_move][1])
                 k-=1
 
-        if(self.current_move > self.minVisit):
+        if(self.current_move >= self.minVisit):
             return True
         
         for i in range(len(self.all_moves)):
-            new_pos = self.current_pos + self.all_moves[i]
-            if(new_pos[0]>=0 and new_pos[0]<self.chessboard_length and new_pos[1]>=0 and new_pos[1]<self.chessboard_length and self.chessboard[new_pos[0],new_pos[1]]==-1):
+            
+            row, col = self.current_pos[0] + self.all_moves[i][0], self.current_pos[1] + self.all_moves[i][1]
+            if(row>=0 and row<self.chessboard_length and col>=0 and col<self.chessboard_length and self.chessboard[row,col]==-1):
                 self.move(self.all_moves[i][0],self.all_moves[i][1])
                 if self.runKRandomChessboardGame(k):
                     return True
@@ -117,6 +119,24 @@ class ChessboardGame():
 
 
 if __name__ == "__main__":
+
+	# total arguments
+    n = len(sys.argv)
+
+    if(n<2):
+        print("You should give a parameter for part 1 or part 2 execution!")
+        sys.exit()
+    elif n > 2:
+        print("You gave more than one parameter!")
+        sys.exit()
+	 
+    # Arguments passed
+    if sys.argv[1].strip()!="part1" and sys.argv[1].strip()!="part2":
+        print("You should give the parameter as 'part1' or 'part2'!")
+        sys.exit()
+
+    firstOneBool = True if sys.argv[1]=="part1" else False
+
     probs = [0.7,0.8,0.85]
     chessboard_length = 8
     count = 0
@@ -125,116 +145,60 @@ if __name__ == "__main__":
 
     ##execution_times = {}
 
-    '''
-    prob = 1.0
-    k = 0
-    successful_tours_k0 = 0
-    start_time_k0 = time.time()
-    #for prob in probs:
-    successful_tours = 0
-    count = 0
-    #start_time = time.time()
-
-    for count in range(trials):
-        game = ChessboardGame(prob, chessboard_length, count, None)
-        success, tour_length = game.runChessboardGame()
-        if success:
-            successful_tours += 1
-
-    end_time_k0 = time.time()
-    total_time_k0 = end_time_k0 - start_time_k0
-    print(f"Part 1 - LasVegas Algorithm With p = {prob}")
-    print(f"Number of successful tours: {successful_tours}")
-    print(f"Number of trials: {trials}")
-    print(f"Probability of a successful tour: {successful_tours/trials}\n")
-    print(f"Total Time of Execution: {total_time:.2f} seconds\n")
-    print(f"Total Time of Execution: {total_time_k0:.2f} seconds\n")
-    '''
-
-
-    for prob in probs:
-        successful_tours = 0
-        count = 0
-        with open("results_{}.txt".format(prob), "w") as outputFile:
-            while count < trials:
-                game = ChessboardGame(prob, chessboard_length, count, outputFile)
-                success, tour_length = game.runChessboardGame()
-                if success:
-                    outputFile.write("Successful - Tour length: {}\n".format(tour_length))
-                    successful_tours += 1
-                else:
-                    outputFile.write("Unsuccessful - Tour length: {}\n".format(tour_length))
-
-                game.printGameboard()
-                count += 1
-            ##end_time = time.time() 
-            ##total_time = end_time - start_time
-            ##execution_times[prob] = end_time - start_time
-            print("LasVegas Algorithm With p = {}".format(prob))
-            print("Number of successful tours: {}".format(successful_tours))
-            print("Number of trials: {}".format(trials))
-            print("Probability of a successful tour: {}\n".format(successful_tours/trials))
-
-            ##print("Total Time of Execution: {:.2f} seconds\n".format(execution_times[prob]))
-
-    '''
-    k = 0
-    successful_tours_k0 = 0
-    start_time_k0 = time.time()
-    for count in range(trials):
-        game = ChessboardGame(prob, chessboard_length, count, None)
-        success = game.runKRandomChessboardGame(k)
-        if success:
-            successful_tours += 1
-    end_time_k0 = time.time()
-    total_time_k0 = end_time_k0 - start_time_k0
-    print(f"Part 2 - LasVegas Algorithm With p = {prob}, k = {k}")
-    print(f"Number of successful tours: {successful_tours}")
-    print(f"Number of trials: {trials}")
-    print(f"Probability of a successful tour: {successful_tours/trials}\n")
-    print(f"Total Time of Execution: {total_time_k0:.2f} seconds\n")
-
-    k = 5
-    successful_tours_k5 = 0
-    start_time_k5 = time.time()
-    for count in range(trials):
-        game = ChessboardGame(prob, chessboard_length, count, None)
-        success = game.runKRandomChessboardGame(k)
-        if success:
-            successful_tours += 1
-    end_time_k5 = time.time()
-    total_time_k5 = end_time_k0 - start_time_k0
-    print(f"Part 2 - LasVegas Algorithm With p = {prob}, k = {k}")
-    print(f"Number of successful tours: {successful_tours}")
-    print(f"Number of trials: {trials}")
-    print(f"Total Time of Execution: {total_time_k5:.2f} seconds\n")
-
-    '''
-
-    for prob in probs:
-        for k in kValues:
+    if firstOneBool:
+        for prob in probs:
             successful_tours = 0
             count = 0
-            #start_time = time.time() 
-            
-            while count < trials:
-                game = ChessboardGame(prob, chessboard_length, count, None)
-                success = game.runKRandomChessboardGame(k)
-                if success:
-                    successful_tours += 1
+            with open("results_{}.txt".format(prob), "w") as outputFile:
+                while count < trials:
+                    game = ChessboardGame(prob, chessboard_length, count, outputFile)
+                    success, tour_length = game.runChessboardGame()
+                    if success:
+                        outputFile.write("Successful - Tour length: {}\n".format(tour_length))
+                        successful_tours += 1
+                    else:
+                        outputFile.write("Unsuccessful - Tour length: {}\n".format(tour_length))
 
-                count += 1
+                    game.printGameboard()
+                    count += 1
+                ##end_time = time.time() 
+                ##total_time = end_time - start_time
+                ##execution_times[prob] = end_time - start_time
+                print("LasVegas Algorithm With p = {}".format(prob))
+                print("Number of successful tours: {}".format(successful_tours))
+                print("Number of trials: {}".format(trials))
+                print("Probability of a successful tour: {}\n".format(successful_tours/trials))
 
-            #end_time = time.time()  
-            #total_time = end_time - start_time  
+                ##print("Total Time of Execution: {:.2f} seconds\n".format(execution_times[prob]))
 
-            print("--- p = {} ---".format(prob))
-            print("LasVegas Algorithm With p = {}, k = {}".format(prob, k))
-            print("Number of successful tours: {}".format(successful_tours))
-            print("Number of trials: {}".format(trials))
-            print("Probability of a successful tour: {}\n".format(successful_tours/trials))
-            #print("Total Time of Execution for p = {}, k = {}: {:.2f} seconds\n".format(prob, k, total_time))
-            print()
+    
+
+    else:
+        for prob in probs:
+            for k in kValues:
+                print(kValues)
+                successful_tours = 0
+                count = 0
+                #start_time = time.time() 
+                
+                while count < trials:
+                    game = ChessboardGame(prob, chessboard_length, count, None)
+                    success = game.runKRandomChessboardGame(k)
+                    if success:
+                        successful_tours += 1
+
+                    count += 1
+
+                #end_time = time.time()  
+                #total_time = end_time - start_time  
+
+                print("--- p = {} ---".format(prob))
+                print("LasVegas Algorithm With p = {}, k = {}".format(prob, k))
+                print("Number of successful tours: {}".format(successful_tours))
+                print("Number of trials: {}".format(trials))
+                print("Probability of a successful tour: {}\n".format(successful_tours/trials))
+                #print("Total Time of Execution for p = {}, k = {}: {:.2f} seconds\n".format(prob, k, total_time))
+                print()
 
 
 
